@@ -11,39 +11,19 @@ const checkClickedAnswer = (event) => {
     // 親要素のolから、data-idの値を取得
     const questionId = clickedAnswerElement.closest('ol.answers').dataset.id;
 
-    var url = "http://localhost/quiz/checkAnswer/id/selectedAnswer";
-    url = url.replace('id', questionId).replace('selectedAnswer', selectedAnswer);
-
-    const xhr = new XMLHttpRequest();
-
-    // HTTPメソッドをPOSTに指定、送信するURLを指定
-    xhr.open('GET', url);
-
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.setRequestHeader('X-From', location.origin);
-    // フォームデータを送信
-    xhr.send();
-
-    xhr.addEventListener('loadend', (event) => {
-        /** @type {XMLHttpRequest} */
-
-        // addEventListenerによってイベント検知した対象(XMLHttpRequest)のオブジェクトを取得
-        const xhr = event.currentTarget;
-
-        // http status code を確認
-        if (xhr.status === 200) {
-            // 正常な処理
-
+    axios.get(`/quiz/checkAnswer/${questionId}/${selectedAnswer}`)
+        .then((response) => {
             // サーバーからのレスポンス(LaravelのコントローラーでViewを返却)をhtmlに表示
-            document.documentElement.innerHTML = xhr.response;
+            document.documentElement.innerHTML = response.data;
 
             addEvent();
-
-        } else {
-            // エラーなど
-            alert('Error:回答データの取得に失敗しました。');
-        }
-    });
+            console.log(response);
+        })
+        .catch((error) => {
+            // リクエストで何らかのエラーが発生した場合
+            alert(error);
+            console.log(error);
+        });
 };
 
 const addEvent = () => {
