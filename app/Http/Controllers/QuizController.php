@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Quiz;
 
 class QuizController extends Controller
@@ -14,57 +13,9 @@ class QuizController extends Controller
      */
     public function index()
     {
-        return view('quizzes.index', [
+        return view('quiz.index', [
             'quizzes' => Quiz::all(),
         ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('quizzes.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        // 入力内容のチェック
-        // ルールに一致しない入力の場合は、自動的に入力画面を表示させる
-        $validatedData = $request->validate([
-            'question' => 'required|max:255',
-            'answer_a' => 'required|max:255',
-            'answer_b' => 'required|max:255',
-            'answer_c' => 'required|max:255',
-            'answer_d' => 'required|max:255',
-            'correct_answer' => 'required|in:A,B,C,D',
-            'explanation' => 'max:65535',
-        ]);
-
-        // Modelを作成
-        $Quiz = new Quiz;
-        $Quiz->question = $validatedData['question'];
-        $Quiz->answer_a = $validatedData['answer_a'];
-        $Quiz->answer_b = $validatedData['answer_b'];
-        $Quiz->answer_c = $validatedData['answer_c'];
-        $Quiz->answer_d = $validatedData['answer_d'];
-        $Quiz->correct_answer = $validatedData['correct_answer'];
-        $Quiz->explanation = $validatedData['explanation'];
-
-        // ModelをDBに保存
-        $Quiz->save();
-
-        // 一覧ページを表示
-        // ※ リロードされたときに、もう一度データが保存されないようにリダイレクトさせる
-        return redirect(route('quizzes.index'));
     }
 
     /**
@@ -75,78 +26,25 @@ class QuizController extends Controller
      */
     public function show($id)
     {
-        return view('quizzes.show', [
+        return view('quiz.show', [
             'quiz' => Quiz::find($id)
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
+    // クイズの正誤判定
+    public function checkAnswer($id, $selectedAnswer)
     {
-        return view('quizzes.edit', ['quiz' => Quiz::find($id)]);
+        $quiz = Quiz::find($id);
 
-    }
+        $isCorrect = false;
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        // 入力内容のチェック
-        // ルールに一致しない入力の場合は、自動的に入力画面を表示させる
-        $validatedData = $request->validate([
-            'question' => 'required|max:255',
-            'answer_a' => 'required|max:255',
-            'answer_b' => 'required|max:255',
-            'answer_c' => 'required|max:255',
-            'answer_d' => 'required|max:255',
-            'correct_answer' => 'required|in:A,B,C,D',
-            'explanation' => 'max:65535',
-        ]);
-
-        // Modelを作成
-        $Quiz = Quiz::find($id);
-        $Quiz->question = $validatedData['question'];
-        $Quiz->answer_a = $validatedData['answer_a'];
-        $Quiz->answer_b = $validatedData['answer_b'];
-        $Quiz->answer_c = $validatedData['answer_c'];
-        $Quiz->answer_d = $validatedData['answer_d'];
-        $Quiz->correct_answer = $validatedData['correct_answer'];
-        $Quiz->explanation = $validatedData['explanation'];
-
-        // ModelをDBに保存
-        $Quiz->save();
-
-        // 一覧ページを表示
-        // ※ リロードされたときに、もう一度データが保存されないようにリダイレクトさせる
-        return redirect(route('quizzes.index'));
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        if (!Quiz::destroy($id)) {
-            // 400 Bad Request
-            return response()->json([
-                'message' => 'Failed to delete.',
-            ], 400);
+        if ($quiz->correct_answer == $selectedAnswer) {
+            $isCorrect = true;
         }
 
-        // 204 NO CONTENT
-        return response()->noContent();
+        return view('quiz.show', [
+            'quiz' => Quiz::find($id),
+            'isCorrect' => $isCorrect
+        ]);
     }
 }

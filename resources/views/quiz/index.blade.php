@@ -1,13 +1,13 @@
 @extends('layouts.base')
-@section('title', 'Quiz 管理')
+@section('title', 'Quiz!')
 
 @section('content')
     <div class="col mt-3 mb-5">
-        <h1>Quiz 管理</h1>
+        <h1>Quiz!</h1>
     </div>
     <div class="row mt-5 mb-3">
         <div class="col text-right">
-            <a href="{{ route('quizzes.create') }}" type="button" class="btn btn-primary">追加</a>
+            <a href="{{ route('quiz-maintenance.index') }}" type="button" class="btn btn-primary">クイズ管理画面</a>
         </div>
     </div>
     <div class="row my-3">
@@ -16,7 +16,6 @@
                 <tr>
                     <th scope="col" style="width:10%">ID</th>
                     <th scope="col">問題</th>
-                    <th scope="col" style="width:11%">操作</th>
                 </tr>
             </thead>
             <tbody>
@@ -24,18 +23,9 @@
                     <tr>
                         <th scope="row">{{ $quiz->id }}</th>
                         <td>
-                            <a href="{{ route('quizzes.show', $quiz->id) }}">
+                            <a href="{{ route('quiz.show', $quiz->id) }}">
                                 {{ Str::limit($quiz->question, 60, '...') }}
                             </a>
-                        </td>
-                        <td>
-                            <div style="display:flex; justify-content:space-between;">
-                                <a href="{{ route('quizzes.edit', $quiz->id) }}" type="button"
-                                    class="btn btn-outline-primary btn-sm">編集</a>
-                                <button type="button" class="delete-quiz btn btn-outline-danger btn-sm"
-                                    data-id="{{ $quiz->id }}">削除
-                                </button>
-                            </div>
                         </td>
                     </tr>
                 @endforeach
