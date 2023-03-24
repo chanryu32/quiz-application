@@ -19,7 +19,7 @@ window.addEventListener('DOMContentLoaded', function (event) {
       // ボタンのタグについている属性data-idに設定されている値(data-idの値)をURLにしてサーバーにリクエスト
       // リクエストメソッドが DELETE で送信
       // axios https://github.com/axios/axios
-      axios.delete('/quizzes/' + quizId)
+      axios.delete('/quiz-maintenance/' + quizId)
         .then(function (response) {
           // リクエストが正常に処理された場合
 

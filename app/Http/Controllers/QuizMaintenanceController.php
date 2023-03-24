@@ -6,7 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Quiz;
 use Illuminate\Contracts\View\View;
-use Illuminate\Routing\Redirector;
+use Illuminate\Http\RedirectResponse;
 
 class QuizMaintenanceController extends Controller
 {
@@ -36,9 +36,9 @@ class QuizMaintenanceController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request): Redirector
+    public function store(Request $request): RedirectResponse
     {
         // 入力内容のチェック
         // ルールに一致しない入力の場合は、自動的に入力画面を表示させる
@@ -67,7 +67,7 @@ class QuizMaintenanceController extends Controller
 
         // 一覧ページを表示
         // ※ リロードされたときに、もう一度データが保存されないようにリダイレクトさせる
-        return redirect(route('quiz-maintenance.index'));
+        return redirect()->route('quiz-maintenance.index');
     }
 
     /**
@@ -99,9 +99,9 @@ class QuizMaintenanceController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, int $id): Redirector
+    public function update(Request $request, int $id): RedirectResponse
     {
         // 入力内容のチェック
         // ルールに一致しない入力の場合は、自動的に入力画面を表示させる
