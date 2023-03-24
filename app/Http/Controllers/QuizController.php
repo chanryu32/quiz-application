@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Quiz;
+use Illuminate\Contracts\View\View;
 
 class QuizController extends Controller
 {
@@ -11,7 +12,7 @@ class QuizController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): View
     {
         return view('quiz.index', [
             'quizzes' => Quiz::all(),
@@ -24,15 +25,20 @@ class QuizController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(int $id): View
     {
         return view('quiz.show', [
             'quiz' => Quiz::find($id)
         ]);
     }
 
-    // クイズの正誤判定
-    public function checkAnswer($id, $selectedAnswer)
+    /**
+     * Summary of checkAnswer
+     * @param int $id
+     * @param string $selectedAnswer
+     * @return View
+     */
+    public function checkAnswer(int $id, string $selectedAnswer): View
     {
         $quiz = Quiz::find($id);
 

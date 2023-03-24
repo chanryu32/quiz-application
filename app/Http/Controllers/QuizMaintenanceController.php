@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Quiz;
+use Illuminate\Contracts\View\View;
+use Illuminate\Routing\Redirector;
 
 class QuizMaintenanceController extends Controller
 {
@@ -12,7 +15,7 @@ class QuizMaintenanceController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): View
     {
         return view('quiz-maintenance.index', [
             'quizzes' => Quiz::all(),
@@ -24,7 +27,7 @@ class QuizMaintenanceController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(): View
     {
         return view('quiz-maintenance.create');
     }
@@ -35,7 +38,7 @@ class QuizMaintenanceController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request): Redirector
     {
         // 入力内容のチェック
         // ルールに一致しない入力の場合は、自動的に入力画面を表示させる
@@ -73,7 +76,7 @@ class QuizMaintenanceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(int $id): View
     {
         return view('quiz-maintenance.show', [
             'quiz' => Quiz::find($id)
@@ -86,10 +89,9 @@ class QuizMaintenanceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit($id): View
     {
         return view('quiz-maintenance.edit', ['quiz' => Quiz::find($id)]);
-
     }
 
     /**
@@ -99,7 +101,7 @@ class QuizMaintenanceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id): Redirector
     {
         // 入力内容のチェック
         // ルールに一致しない入力の場合は、自動的に入力画面を表示させる
@@ -135,18 +137,18 @@ class QuizMaintenanceController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy($id)
+    public function destroy(int $id): JsonResponse
     {
         if (!Quiz::destroy($id)) {
             // 400 Bad Request
-            return response()->json([
+            return new JsonResponse([
                 'message' => 'Failed to delete.',
             ], 400);
         }
 
         // 204 NO CONTENT
-        return response()->noContent();
+        return response()->json(null, 204);
     }
 }
