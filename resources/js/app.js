@@ -1,5 +1,10 @@
 require('./bootstrap');
 
+import { createApp } from 'vue/dist/vue.esm-bundler.js';
+window.createApp = createApp;
+
+window.HelloComponent = require('./components/Hello.vue').default;
+
 // HTMLの読み込みが終わった後に実行される処理を設定
 window.addEventListener('DOMContentLoaded', function (event) {
   // delete-quiz の class があたっているタグ(ボタン)をすべて取得(配列)
