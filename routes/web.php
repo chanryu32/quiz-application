@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\QuizMaintenanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,4 +19,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::resource('quizzes', QuizController::class);
+//クイズプレイ用ルーティング
+Route::resource('quiz', QuizController::class);
+
+//クイズ管理用ルーティング
+Route::resource('quiz-maintenance', QuizMaintenanceController::class);
+
+Route::get('quiz/checkAnswer/{id}/{selectedAnswer}', [QuizController::class, 'checkAnswer'])->name('quiz.checkAnswer');
