@@ -2,7 +2,6 @@
 @section('title', 'Quiz!')
 
 @section('content')
-    <script src="{{ asset('js/questions.js') }}"></script>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
     <h1>Quiz!</h1>
