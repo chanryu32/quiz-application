@@ -18,6 +18,11 @@ class QuizController extends Controller
             'quizzes' => Quiz::all(),
         ]);
     }
+    public function indexAPI()
+    {
+        $quizzes = Quiz::all();
+        return response()->json($quizzes);
+    }
 
     /**
      * Display the specified resource.

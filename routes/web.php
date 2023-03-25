@@ -19,6 +19,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+Route::get('quiz/indexAPI', [QuizController::class, 'indexAPI'])->name('quiz.indexAPI');
+Route::get('quiz/{quiz}', [QuizController::class, 'show'])->where('id', '[0-9]+')->name('quiz.show');
 //クイズプレイ用ルーティング
 Route::resource('quiz', QuizController::class);
 
