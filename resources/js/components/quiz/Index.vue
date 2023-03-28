@@ -4,9 +4,9 @@
   </div>
   <div class="row mt-5 mb-3">
     <div class="col text-right">
-      <a href="/quiz-maintenance" type="button" class="btn btn-primary"
-        >クイズ管理画面</a
-      >
+      <router-link to="/quiz-management" class="btn btn-primary">
+        クイズ管理画面
+      </router-link>
     </div>
   </div>
   <div class="row my-3">
@@ -21,12 +21,12 @@
         <tr v-for="quiz in quizzes" :key="quiz.id">
           <th scope="row">{{ quiz.id }}</th>
           <td>
-            <a :href="'/quiz/' + quiz.id">
+            <router-link :to="'/quiz/show/' + quiz.id">
               {{
                 quiz.question.substr(0, 60) +
                 (quiz.question.length > 60 ? "..." : "")
-              }}
-            </a>
+              }}</router-link
+            >
           </td>
         </tr>
       </tbody>
@@ -43,9 +43,9 @@ export default {
   },
   created() {
     axios
-      .get("/quiz/indexAPI")
+      .get("/quizIndexAPI")
       .then((response) => {
-        this.quizzes = response.data.concat();
+        this.quizzes = response.data;
 
         console.log(response);
       })

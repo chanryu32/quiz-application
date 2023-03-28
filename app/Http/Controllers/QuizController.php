@@ -30,11 +30,10 @@ class QuizController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(int $id): View
+    public function show(int $id)
     {
-        return view('quiz.show', [
-            'quiz' => Quiz::find($id)
-        ]);
+        $quiz = Quiz::find($id);
+        return response()->json($quiz);
     }
 
     /**
@@ -43,7 +42,7 @@ class QuizController extends Controller
      * @param string $selectedAnswer
      * @return View
      */
-    public function checkAnswer(int $id, string $selectedAnswer): View
+    public function checkAnswer(int $id, string $selectedAnswer)
     {
         $quiz = Quiz::find($id);
 
@@ -53,9 +52,6 @@ class QuizController extends Controller
             $isCorrect = true;
         }
 
-        return view('quiz.show', [
-            'quiz' => Quiz::find($id),
-            'isCorrect' => $isCorrect
-        ]);
+        return response()->json($isCorrect);
     }
 }

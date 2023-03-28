@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Quiz;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
 
 class QuizMaintenanceController extends Controller
 {
@@ -15,21 +14,10 @@ class QuizMaintenanceController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(): View
+    public function index()
     {
-        return view('quiz-maintenance.index', [
-            'quizzes' => Quiz::all(),
-        ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create(): View
-    {
-        return view('quiz-maintenance.create');
+        $quizzes = Quiz::all();
+        return response()->json($quizzes);
     }
 
     /**
@@ -38,7 +26,7 @@ class QuizMaintenanceController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         // 入力内容のチェック
         // ルールに一致しない入力の場合は、自動的に入力画面を表示させる
@@ -64,34 +52,6 @@ class QuizMaintenanceController extends Controller
 
         // ModelをDBに保存
         $Quiz->save();
-
-        // 一覧ページを表示
-        // ※ リロードされたときに、もう一度データが保存されないようにリダイレクトさせる
-        return redirect()->route('quiz-maintenance.index');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show(int $id): View
-    {
-        return view('quiz-maintenance.show', [
-            'quiz' => Quiz::find($id)
-        ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id): View
-    {
-        return view('quiz-maintenance.edit', ['quiz' => Quiz::find($id)]);
     }
 
     /**
@@ -99,10 +59,10 @@ class QuizMaintenanceController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id)
     {
+
         // 入力内容のチェック
         // ルールに一致しない入力の場合は、自動的に入力画面を表示させる
         $validatedData = $request->validate([
@@ -127,10 +87,6 @@ class QuizMaintenanceController extends Controller
 
         // ModelをDBに保存
         $Quiz->save();
-
-        // 一覧ページを表示
-        // ※ リロードされたときに、もう一度データが保存されないようにリダイレクトさせる
-        return redirect(route('quiz-maintenance.index'));
     }
 
     /**

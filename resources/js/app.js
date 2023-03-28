@@ -1,7 +1,12 @@
 require('./bootstrap');
 
-import { createApp } from 'vue/dist/vue.esm-bundler.js';
-import IndexComponent from './components/quiz/Index.vue';
+import { createApp } from 'vue';
+import IndexComponent from './components/quiz/Index';
+import router from './routes';
 
-window.createApp = createApp;
-window.IndexComponent = IndexComponent;
+createApp({
+  components: {
+    'v-index': IndexComponent
+  }
+}).use(router)
+  .mount('#app');
