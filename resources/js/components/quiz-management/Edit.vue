@@ -98,6 +98,10 @@ export default {
       errors: [],
     };
   },
+
+  created() {
+    this.fetchQuiz(this.$route.params.id);
+  },
   methods: {
     submitForm() {
       axios
@@ -123,25 +127,25 @@ export default {
     scrollToTop() {
       document.documentElement.scrollTop = 0;
     },
-  },
-  created() {
-    axios
-      .get("/quizShowAPI/" + this.$route.params.id)
-      .then((response) => {
-        this.question = response.data.question;
-        this.answers[0].value = response.data.answer_a;
-        this.answers[1].value = response.data.answer_b;
-        this.answers[2].value = response.data.answer_c;
-        this.answers[3].value = response.data.answer_d;
-        this.correctAnswer = response.data.correct_answer;
-        this.explanation = response.data.explanation;
-        console.log(response);
-      })
-      .catch((error) => {
-        // リクエストで何らかのエラーが発生した場合
-        alert(error);
-        console.log(error);
-      });
+    fetchQuiz(id) {
+      axios
+        .get("/quizShowAPI/" + id)
+        .then((response) => {
+          this.question = response.data.question;
+          this.answers[0].value = response.data.answer_a;
+          this.answers[1].value = response.data.answer_b;
+          this.answers[2].value = response.data.answer_c;
+          this.answers[3].value = response.data.answer_d;
+          this.correctAnswer = response.data.correct_answer;
+          this.explanation = response.data.explanation;
+          console.log(response);
+        })
+        .catch((error) => {
+          // リクエストで何らかのエラーが発生した場合
+          alert(error);
+          console.log(error);
+        });
+    }
   },
 };
 </script>

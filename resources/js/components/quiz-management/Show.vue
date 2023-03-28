@@ -43,20 +43,23 @@ export default {
     };
   },
   created() {
-    axios
-      .get("/quizShowAPI/" + this.$route.params.id)
-      .then((response) => {
-        this.quiz = response.data;
-
-        console.log(response);
-      })
-      .catch((error) => {
-        // リクエストで何らかのエラーが発生した場合
-        alert(error);
-        console.log(error);
-      });
+    this.fetchQuiz(this.$route.params.id)
   },
   methods: {
+    fetchQuiz(id) {
+      axios
+        .get("/quizShowAPI/"+id)
+        .then((response) => {
+          this.quiz = response.data;
+
+          console.log(response);
+        })
+        .catch((error) => {
+          // リクエストで何らかのエラーが発生した場合
+          alert(error);
+          console.log(error);
+        });
+    },
     formatText(text) {
       return text.replace(/\n/g, "<br>");
     },

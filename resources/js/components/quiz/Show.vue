@@ -7,7 +7,7 @@
     <h2>問題</h2>
     <div class="pl-2">
       <div class="mt-1">
-        <p v-html="this.quiz.question"></p>
+        <p v-html="formatText(quiz.question)"></p>
       </div>
     </div>
   </div>
@@ -15,25 +15,26 @@
     <h2>選択肢</h2>
     <div class="mt-1">
       <ol class="pl-4 answers" style="list-style-type: upper-alpha">
-        <li @click="checkClickedAnswer('A')">{{ this.quiz.answer_a }}</li>
-        <li @click="checkClickedAnswer('B')">{{ this.quiz.answer_b }}</li>
-        <li @click="checkClickedAnswer('C')">{{ this.quiz.answer_c }}</li>
-        <li @click="checkClickedAnswer('D')">{{ this.quiz.answer_d }}</li>
+        <li @click="checkClickedAnswer('A')">{{ quiz.answer_a }}</li>
+        <li @click="checkClickedAnswer('B')">{{ quiz.answer_b }}</li>
+        <li @click="checkClickedAnswer('C')">{{ quiz.answer_c }}</li>
+        <li @click="checkClickedAnswer('D')">{{ quiz.answer_d }}</li>
       </ol>
     </div>
   </div>
-  <div v-if="this.isCorrect !== null">
+  <div v-if="isCorrect !== null">
     <h3>
-      <div :id="this.isCorrect ? 'correct' : 'unCorrect'">
+      <div :id="isCorrect ? 'correct' : 'unCorrect'">
         {{ isCorrect ? "正解です！" : "不正解です！" }}
       </div>
     </h3>
     <div class="pl-2" id="answer">
-      <span>正解: {{ this.quiz.correct_answer }}</span>
+      <span>正解: {{ quiz.correct_answer }}</span>
     </div>
     <h4>
       <div class="pl-2 mt-2" id="explanation">
-        <p>解説:{{ this.quiz.explanation }}</p>
+        解説:
+        <p v-html="formatText(quiz.explanation)"></p>
       </div>
     </h4>
   </div>
@@ -51,18 +52,7 @@ export default {
     };
   },
   created() {
-    axios
-      .get("/quizShowAPI/" + this.$route.params.id)
-      .then((response) => {
-        this.quiz = response.data;
-
-        console.log(response);
-      })
-      .catch((error) => {
-        // リクエストで何らかのエラーが発生した場合
-        alert(error);
-        console.log(error);
-      });
+    this.fetchQuiz(this.$route.params.id);
   },
   methods: {
     checkClickedAnswer(answer) {
@@ -82,6 +72,23 @@ export default {
           alert(error);
           console.log(error);
         });
+    },
+    fetchQuiz(id) {
+      axios
+        .get("/quizShowAPI/" + id)
+        .then((response) => {
+          this.quiz = response.data;
+
+          console.log(response);
+        })
+        .catch((error) => {
+          // リクエストで何らかのエラーが発生した場合
+          alert(error);
+          console.log(error);
+        });
+    },
+    formatText(text) {
+      return text.replace(/\n/g, "<br>");
     },
   },
 };
