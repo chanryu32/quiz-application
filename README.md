@@ -38,7 +38,7 @@ Udemyのコースを基に勉強を兼ねてカスタマイズ中です。
 ## 準備
 ### 1. ダウンロード
 ```
-git clone https://github.com/masa0221/laravel-quiz-app.git
+git clone https://github.com/chanryu32/quiz-application.git
 ```
 clone できたら、以下でディレクトリを移動してください。
 ```
