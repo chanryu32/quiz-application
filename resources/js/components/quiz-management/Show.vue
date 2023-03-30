@@ -43,12 +43,12 @@ export default {
     };
   },
   created() {
-    this.fetchQuiz(this.$route.params.id)
+    this.fetchQuiz(this.$route.params.id);
   },
   methods: {
     fetchQuiz(id) {
       axios
-        .get("/quizShowAPI/"+id)
+        .get("/quizShowAPI/" + id)
         .then((response) => {
           this.quiz = response.data;
 
@@ -61,7 +61,7 @@ export default {
         });
     },
     formatText(text) {
-      return text.replace(/\n/g, "<br>");
+      return text.replace(/\s/g, "<br>");
     },
   },
 };
