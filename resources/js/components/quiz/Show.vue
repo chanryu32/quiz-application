@@ -88,7 +88,7 @@ export default {
         });
     },
     formatText(text) {
-      return text.replace(/\n/g, "<br>");
+      return text.replace(/\s/g, "<br>");
     },
   },
 };
