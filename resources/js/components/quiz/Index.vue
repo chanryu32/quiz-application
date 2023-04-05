@@ -10,16 +10,15 @@
     </div>
   </div>
   <div class="row my-3">
-    <table class="table table-striped table-hover table-sm" id="quizzes-table">
+    <table class="table table-hover table-sm" id="quizzes-table">
       <thead class="thead-light">
         <tr>
-          <th scope="col" style="width: 10%">ID</th>
           <th scope="col">問題</th>
+          <th scope="col" style="width: 1.5%"></th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="quiz in quizzes" :key="quiz.id">
-          <th scope="row">{{ quiz.id }}</th>
           <td>
             <router-link :to="'/quiz/show/' + quiz.id">
               {{
@@ -28,10 +27,14 @@
               }}</router-link
             >
           </td>
+          <td scope="row" v-if="isCreatedInWeek(quiz.updated_at)">New!</td>
+          <td scope="row" v-else></td>
         </tr>
       </tbody>
     </table>
   </div>
+  <div v-if="isLoading" class="spinner"></div>
+  <div v-if="error" class="error-container">{{ error }}</div>
 </template>
 
 <script>
@@ -39,32 +42,44 @@ export default {
   data() {
     return {
       quizzes: [],
+      isLoading: false,
+      error: null,
     };
   },
   created() {
     this.fetchQuizzes();
   },
+  beforeUnmount() {
+    this.cancelRequest();
+  },
   methods: {
-    fetchQuizzes() {
-      axios
-        .get("/quizIndexAPI")
-        .then((response) => {
-          this.quizzes = response.data;
-
-          console.log(response);
-        })
-        .catch((error) => {
-          // リクエストで何らかのエラーが発生した場合
-          alert(error);
-          console.log(error);
+    async fetchQuizzes() {
+      this.isLoading = true;
+      try {
+        const response = await axios.get("/quizIndexAPI", {
+          cancelToken: new axios.CancelToken((c) => {
+            this.cancelRequest = c;
+          }),
         });
+        this.quizzes = response.data;
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        } else {
+          this.error = "クイズの取得に失敗しました。再度お試しください。";
+          console.error(error);
+        }
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    isCreatedInWeek(date) {
+      const today = new Date();
+      const createdAt = new Date(date);
+      const diffTime = Math.abs(createdAt - today);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 7;
     },
   },
 };
 </script>
-
-<style scoped>
-#greeting_box {
-  background-color: #ffeeee;
-}
-</style>

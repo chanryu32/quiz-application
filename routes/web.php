@@ -16,11 +16,6 @@ Route::get('/quiz-management/{path?}', function () {
     return view('home');
 })->where('path', '.*')->name('home');
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-
-
 Route::get('quizIndexAPI/', [QuizController::class, 'indexAPI'])->name('quiz.indexAPI');
 Route::get('quizShowAPI/{quiz}', [QuizController::class, 'show'])->where('id', '[0-9]+')->name('quiz.show');
 Route::get('quizCheckAnswerAPI/{id}/{selectedAnswer}', [QuizController::class, 'checkAnswer'])->name('quiz.checkAnswer');

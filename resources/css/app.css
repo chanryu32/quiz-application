@@ -86,3 +86,61 @@ div#section-correct-answer {
   /** 表示しない */
   display: none;
 }
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #2ad617;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  animation: spin 1s linear infinite;
+}
+
+.error-container {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 33.3%;
+  background-color: #f45757;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  z-index: 9999;
+  animation: fade-out 10s linear forwards;
+}
+
+.message-container {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 33.3%;
+  background-color: #88ee44;
+  color: rgb(255, 255, 255);
+  text-align: center;
+  padding: 10px;
+  z-index: 9999;
+  animation: fade-out 10s linear forwards;
+}
+
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

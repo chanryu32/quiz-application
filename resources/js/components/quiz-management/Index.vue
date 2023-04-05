@@ -13,10 +13,11 @@
     </div>
   </div>
   <div class="row my-3">
-    <table class="table table-striped table-hover table-sm" id="quizzes-table">
+    <table class="table table-hover table-sm" id="quizzes-table">
       <thead class="thead-light">
         <tr>
-          <th scope="col" style="width: 10%">ID</th>
+          <th scope="col" style="width: 5%">ID</th>
+          <th scope="col" style="width: 1.5%"></th>
           <th scope="col">問題</th>
           <th scope="col" style="width: 11%">操作</th>
         </tr>
@@ -24,6 +25,8 @@
       <tbody>
         <tr v-for="(quiz, index) in quizzes" :key="quiz.id">
           <th scope="row">{{ quiz.id }}</th>
+          <td scope="row" v-if="isCreatedInWeek(quiz.updated_at)">New!</td>
+          <td scope="row" v-else></td>
           <td>
             <router-link :to="'/quiz-management/show/' + quiz.id">
               {{
@@ -51,6 +54,9 @@
       </tbody>
     </table>
   </div>
+  <div v-if="isLoading" class="spinner"></div>
+  <div v-if="error" class="error-container">{{ error }}</div>
+  <div v-if="message" class="message-container">{{ message }}</div>
 </template>
 
 <script>
@@ -58,48 +64,78 @@ export default {
   data() {
     return {
       quizzes: [],
+      error: null,
+      messege: null,
+      isLoading: false,
     };
   },
+  created() {
+    this.fetchQuizzes();
+  },
+  beforeUnmount() {
+    this.cancelRequest();
+  },
   methods: {
-    deleteQuiz(id, index) {
+    async deleteQuiz(id, index) {
       // 削除前の確認を表示
       if (!confirm("id:" + id + " のQuizを削除します\nよろしいですか?")) {
         return;
       }
 
-      axios
-        .delete("/quizManagementAPI/" + id)
-        .then((response) => {
-          // リクエストが正常に処理された場合
+      this.isLoading = true;
+      try {
+        const response = await axios.delete(`/quizManagementAPI/${id}`, {
+          cancelToken: new axios.CancelToken((c) => {
+            this.cancelRequest = c;
+          }),
+        });
 
-          // quizzes配列から削除
-          this.quizzes.splice(index, 1);
-          // メッセージ表示
-          alert("削除しました");
-          console.log(response);
-        })
-        .catch((error) => {
-          // リクエストで何らかのエラーが発生した場合
-          alert(error);
-          console.log(error);
-        });
+        // quizzes配列から削除
+        this.quizzes.splice(index, 1);
+        // メッセージ表示
+        this.message = "削除しました";
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        } else {
+          this.error = "クイズの取得に失敗しました。再度お試しください。";
+          console.error(error);
+        }
+      } finally {
+        this.isLoading = false;
+      }
     },
-    fetchQuiz() {
-      axios
-        .get("/quizIndexAPI")
-        .then((response) => {
-          this.quizzes = response.data;
-          console.log(response);
-        })
-        .catch((error) => {
-          // リクエストで何らかのエラーが発生した場合
-          alert(error);
-          console.log(error);
+    async fetchQuizzes() {
+      this.isLoading = true;
+      try {
+        const response = await axios.get("/quizIndexAPI", {
+          cancelToken: new axios.CancelToken((c) => {
+            this.cancelRequest = c;
+          }),
         });
+
+        this.quizzes = response.data;
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        } else {
+          this.error = "クイズの取得に失敗しました。再度お試しください。";
+          console.error(error);
+        }
+      } finally {
+        this.isLoading = false;
+      }
     },
-  },
-  created() {
-    this.fetchQuiz();
+    scrollToTop() {
+      document.documentElement.scrollTop = 0;
+    },
+    isCreatedInWeek(date) {
+      const today = new Date();
+      const createdAt = new Date(date);
+      const diffTime = Math.abs(createdAt - today);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 7;
+    },
   },
 };
 </script>
