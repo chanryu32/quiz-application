@@ -33,6 +33,8 @@
       </router-link>
     </div>
   </div>
+  <div v-if="isLoading" class="spinner"></div>
+  <div v-if="error" class="error-container">{{ error }}</div>
 </template>
 
 <script>
@@ -40,24 +42,38 @@ export default {
   data() {
     return {
       quiz: null,
+      error: null,
+      isLoading: false,
     };
   },
   created() {
     this.fetchQuiz(this.$route.params.id);
   },
+  beforeUnmount() {
+    this.cancelRequest();
+  },
   methods: {
     fetchQuiz(id) {
+      this.isLoading = true;
       axios
-        .get("/quizShowAPI/" + id)
+        .get(`/quizShowAPI/${this.$route.params.id}`, {
+          cancelToken: new axios.CancelToken((c) => {
+            this.cancelRequest = c;
+          }),
+        })
         .then((response) => {
           this.quiz = response.data;
-
-          console.log(response);
         })
         .catch((error) => {
-          // リクエストで何らかのエラーが発生した場合
-          alert(error);
-          console.log(error);
+          if (axios.isCancel(error)) {
+            console.log("Request canceled", error.message);
+          } else {
+            this.error = "クイズの取得に失敗しました。再度お試しください。";
+            console.error(error);
+          }
+        })
+        .finally(() => {
+          this.isLoading = false;
         });
     },
     formatText(text) {

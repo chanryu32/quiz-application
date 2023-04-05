@@ -41,6 +41,8 @@
   <div class="mt-3 mb-5 text-right">
     <router-link to="/quiz" class="btn btn-link">問題一覧に戻る!</router-link>
   </div>
+  <div v-if="isLoading" class="spinner"></div>
+  <div v-if="error" class="error-container">{{ error }}</div>
 </template>
 
 <script>
@@ -49,42 +51,65 @@ export default {
     return {
       quiz: Object,
       isCorrect: null,
+      isLoading: false,
+      error: null,
     };
   },
   created() {
     this.fetchQuiz(this.$route.params.id);
   },
+  beforeUnmount() {
+    this.cancelRequest();
+  },
   methods: {
-    checkClickedAnswer(answer) {
+    async checkClickedAnswer(answer) {
       // 選択した答え(A,B,C,D)
       const selectedAnswer = answer;
       const questionId = this.$route.params.id;
 
-      axios
-        .get(`/quizCheckAnswerAPI/${questionId}/${selectedAnswer}`)
-        .then((response) => {
-          this.isCorrect = response.data;
-
-          console.log(response);
-        })
-        .catch((error) => {
-          // リクエストで何らかのエラーが発生した場合
-          alert(error);
-          console.log(error);
-        });
+      this.isLoading = true;
+      try {
+        const response = await axios.get(
+          `/quizCheckAnswerAPI/${questionId}/${selectedAnswer}`,
+          {
+            cancelToken: new axios.CancelToken((c) => {
+              this.cancelRequest = c;
+            }),
+          }
+        );
+        this.isCorrect = response.data;
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        } else {
+          this.error = "エラーが発生しました。再度お試しください。";
+          console.error(error);
+        }
+      } finally {
+        this.isLoading = false;
+      }
     },
     fetchQuiz(id) {
+      this.isLoading = true;
       axios
-        .get("/quizShowAPI/" + id)
+        .get(`/quizShowAPI/${this.$route.params.id}`, {
+          cancelToken: new axios.CancelToken((c) => {
+            this.cancelRequest = c;
+          }),
+        })
         .then((response) => {
           this.quiz = response.data;
-
-          console.log(response);
         })
         .catch((error) => {
-          // リクエストで何らかのエラーが発生した場合
-          alert(error);
-          console.log(error);
+          if (axios.isCancel(error)) {
+            console.log("Request canceled", error.message);
+          } else {
+            this.error = "クイズの取得に失敗しました。再度お試しください。";
+            console.error(error);
+          }
+        })
+        .finally(() => {
+          this.isLoading = false;
         });
     },
     formatText(text) {

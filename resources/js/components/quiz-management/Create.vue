@@ -1,10 +1,10 @@
 <template>
   <div>
     <h1>Quiz 管理 - 問題の追加</h1>
-    <div v-if="Object.keys(errors).length">
+    <div v-if="Object.keys(validationErrors).length">
       <div class="alert alert-danger">
         <ul>
-          <li v-for="error in errors" :key="error">{{ error[0] }}</li>
+          <li v-for="error in validationErrors" :key="error">{{ error[0] }}</li>
         </ul>
       </div>
     </div>
@@ -80,6 +80,7 @@
       </div>
     </form>
   </div>
+  <div v-if="isLoading" class="spinner"></div>
 </template>
 
 <script>
@@ -95,11 +96,17 @@ export default {
       ],
       correctAnswer: "",
       explanation: "",
-      errors: [],
+      validationErrors: [],
+      isLoading: false,
     };
   },
+  beforeUnmount() {
+    this.cancelRequest();
+  },
   methods: {
-    submitForm() {
+    async submitForm() {
+      this.isLoading = true;
+
       const formData = new FormData();
 
       formData.append("question", this.question);
@@ -110,18 +117,27 @@ export default {
       formData.append("correct_answer", this.correctAnswer);
       formData.append("explanation", this.explanation);
 
-      // axiosでフォームデータを送信
-      axios
-        .post("/quizManagementAPI", formData)
-        .then((response) => {
-          this.$router.push("/quiz-management");
-        })
-        .catch((error) => {
-          // リクエストで何らかのエラーが発生した場合
-          this.errors = error.response.data.errors;
-          this.scrollToTop();
-          console.log(error.message);
+      try {
+        const response = await axios.post("/quizManagementAPI", formData, {
+          cancelToken: new axios.CancelToken((c) => {
+            this.cancelRequest = c;
+          }),
         });
+
+        this.$router.push("/quiz-management");
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        } else if (error.response.status == "422") {
+          this.scrollToTop();
+          this.validationErrors = error.response.data.errors;
+        } else {
+          this.error = "クイズの登録に失敗しました。再度お試しください。";
+          console.error(error);
+        }
+      } finally {
+        this.isLoading = false;
+      }
     },
     scrollToTop() {
       document.documentElement.scrollTop = 0;
