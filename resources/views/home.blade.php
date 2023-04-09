@@ -16,6 +16,7 @@
             <router-view></router-view>
         </div>
         <script src="{{ mix('/js/app.js') }}"></script>
+        <script src="{{ mix('/js/Quiz.js') }}"></script>
     </div>
 </body>
 

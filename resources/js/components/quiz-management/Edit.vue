@@ -4,11 +4,11 @@
     <div v-if="Object.keys(validationErrors).length">
       <div class="alert alert-danger">
         <ul>
-          <li v-for="error in validationErrors" :key="error">{{ error[0] }}</li>
+          <li v-for="error in validationErrors">{{ error[0] }}</li>
         </ul>
       </div>
     </div>
-    <form @submit.prevent="submitForm">
+    <form @submit.prevent="submitForm(questionId)">
       <div class="mt-3 mb-5">
         <h2>問題</h2>
         <div class="form-group">
@@ -24,7 +24,6 @@
           <span>選択肢</span>
           <div
             v-for="(answer, index) in answers"
-            :key="index"
             class="input-group flex-nowrap my-2"
           >
             <div class="input-group-prepend">
@@ -75,7 +74,7 @@
       <div class="mt-3 mb-5">
         <button type="submit" class="btn btn-primary">編集</button>
         <router-link to="/quiz-management" class="btn btn-link"
-          >戻る</router-link
+          >一覧に戻る</router-link
         >
       </div>
     </form>
@@ -83,89 +82,103 @@
   <div v-if="isLoading" class="spinner"></div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      question: "",
-      answers: [
-        { label: "A", value: "", placeholder: "Aの答えを入力" },
-        { label: "B", value: "", placeholder: "Bの答えを入力" },
-        { label: "C", value: "", placeholder: "Cの答えを入力" },
-        { label: "D", value: "", placeholder: "Dの答えを入力" },
-      ],
-      correctAnswer: "",
-      explanation: "",
-      validationErrors: [],
-      isLoading: false,
-    };
-  },
+<script setup>
+import axios from "axios";
+import { ref, onBeforeUnmount, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
-  created() {
-    this.fetchQuiz(this.$route.params.id);
-  },
-  beforeUnmount() {
-    this.cancelRequest();
-  },
-  methods: {
-    async submitForm() {
-      this.isLoading = true;
-      try {
-        const response = await axios.put(
-          `/quizManagementAPI/${this.$route.params.id}`,
-          {
-            question: this.question,
-            answer_a: this.answers[0].value,
-            answer_b: this.answers[1].value,
-            answer_c: this.answers[2].value,
-            answer_d: this.answers[3].value,
-            correct_answer: this.correctAnswer,
-            explanation: this.explanation,
-          },
-          {
-            cancelToken: new axios.CancelToken((c) => {
-              this.cancelRequest = c;
-            }),
-          }
-        );
+const question = ref("");
+const answers = [
+  { label: "A", value: "", placeholder: "Aの答えを入力..." },
+  { label: "B", value: "", placeholder: "Bの答えを入力..." },
+  { label: "C", value: "", placeholder: "Cの答えを入力..." },
+  { label: "D", value: "", placeholder: "Dの答えを入力..." },
+];
+const correctAnswer = ref("");
+const explanation = ref("");
+const validationErrors = ref([]);
+const isLoading = ref(false);
+const cancelRequest = ref(null);
+const questionId = useRoute().params.id;
+const router = useRouter();
 
-        this.$router.push("/quiz-management");
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log("Request canceled", error.message);
-        } else if (error.response.status == "422") {
-          this.scrollToTop();
-          this.validationErrors = error.response.data.errors;
-        } else {
-          this.error = "クイズの編集に失敗しました。再度お試しください。";
-          console.error(error);
-        }
-      } finally {
-        this.isLoading = false;
+onMounted(async () => {
+  await fetchQuiz(questionId);
+});
+
+onBeforeUnmount(() => {
+  if (cancelRequest.value) {
+    cancelRequest.value();
+  }
+});
+
+const fetchQuiz = async (questionId) => {
+  isLoading.value = true;
+
+  try {
+    const { data } = await axios.get(`/quizShowAPI/${questionId}`, {
+      cancelToken: new axios.CancelToken((canceler) => {
+        cancelRequest.value = canceler;
+      }),
+    });
+    question.value = data.question;
+    answers[0].value = data.answer_a;
+    answers[1].value = data.answer_b;
+    answers[2].value = data.answer_c;
+    answers[3].value = data.answer_d;
+    correctAnswer.value = data.correct_answer;
+    explanation.value = data.explanation;
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log("Request canceled", error.message);
+    } else {
+      error.value = "クイズの取得に失敗しました。再度お試しください。";
+      console.error(error);
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const submitForm = async (questionId) => {
+  isLoading.value = true;
+
+  try {
+    await axios.put(
+      `/quizManagementAPI/${questionId}`,
+      {
+        question: question.value,
+        answer_a: answers[0].value,
+        answer_b: answers[1].value,
+        answer_c: answers[2].value,
+        answer_d: answers[3].value,
+        correct_answer: correctAnswer.value,
+        explanation: explanation.value,
+      },
+      {
+        cancelToken: new axios.CancelToken((c) => {
+          cancelRequest.value = c;
+        }),
       }
-    },
-    scrollToTop() {
-      document.documentElement.scrollTop = 0;
-    },
-    fetchQuiz(id) {
-      axios
-        .get("/quizShowAPI/" + id)
-        .then((response) => {
-          this.question = response.data.question;
-          this.answers[0].value = response.data.answer_a;
-          this.answers[1].value = response.data.answer_b;
-          this.answers[2].value = response.data.answer_c;
-          this.answers[3].value = response.data.answer_d;
-          this.correctAnswer = response.data.correct_answer;
-          this.explanation = response.data.explanation;
-          console.log(response);
-        })
-        .catch((error) => {
-          // リクエストで何らかのエラーが発生した場合
-          alert(error);
-          console.log(error);
-        });
-    },
-  },
+    );
+
+    router.push("/quiz-management");
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log("Request canceled", error.message);
+    } else if (error.response.status == 422) {
+      scrollToTop();
+      validationErrors.value = error.response.data.errors;
+    } else {
+      error.value = "クイズの登録に失敗しました。再度お試しください。";
+      console.error(error);
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const scrollToTop = () => {
+  document.documentElement.scrollTop = 0;
 };
 </script>

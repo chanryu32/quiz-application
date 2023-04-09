@@ -12,6 +12,7 @@ const mix = require('laravel-mix');
  */
 
 mix.js('resources/js/*.js', 'public/js')
+    .ts('resources/js/types/Quiz.ts', 'public/js')
     .vue()
     .postCss('resources/css/app.css', 'public/css', [
     ]);
