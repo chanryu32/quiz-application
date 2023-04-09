@@ -30,7 +30,7 @@
           <td>
             <router-link :to="'/quiz-management/show/' + quiz.id">
               {{
-                quiz.question.substr(0, 60) +
+                quiz.question.substring(0, 60) +
                 (quiz.question.length > 60 ? "..." : "")
               }}
             </router-link>
@@ -59,83 +59,87 @@
   <div v-if="message" class="message-container">{{ message }}</div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      quizzes: [],
-      error: null,
-      messege: null,
-      isLoading: false,
-    };
-  },
-  created() {
-    this.fetchQuizzes();
-  },
-  beforeUnmount() {
-    this.cancelRequest();
-  },
-  methods: {
-    async deleteQuiz(id, index) {
-      // 削除前の確認を表示
-      if (!confirm("id:" + id + " のQuizを削除します\nよろしいですか?")) {
-        return;
-      }
+<script setup lang="ts">
+import axios, { Canceler } from "axios";
+import { ref, onBeforeUnmount, onMounted } from "vue";
+import { Quiz } from "../../types/Quiz";
 
-      this.isLoading = true;
-      try {
-        const response = await axios.delete(`/quizManagementAPI/${id}`, {
-          cancelToken: new axios.CancelToken((c) => {
-            this.cancelRequest = c;
-          }),
-        });
+const quizzes = ref<Quiz[]>([]);
+const isLoading = ref<boolean>(false);
+const error = ref<any>(null);
+const message = ref<any>(null);
+const cancelRequest = ref<Canceler | null>(null);
 
-        // quizzes配列から削除
-        this.quizzes.splice(index, 1);
-        // メッセージ表示
-        this.message = "削除しました";
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log("Request canceled", error.message);
-        } else {
-          this.error = "クイズの取得に失敗しました。再度お試しください。";
-          console.error(error);
-        }
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    async fetchQuizzes() {
-      this.isLoading = true;
-      try {
-        const response = await axios.get("/quizIndexAPI", {
-          cancelToken: new axios.CancelToken((c) => {
-            this.cancelRequest = c;
-          }),
-        });
-
-        this.quizzes = response.data;
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log("Request canceled", error.message);
-        } else {
-          this.error = "クイズの取得に失敗しました。再度お試しください。";
-          console.error(error);
-        }
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    scrollToTop() {
-      document.documentElement.scrollTop = 0;
-    },
-    isCreatedInWeek(date) {
-      const today = new Date();
-      const createdAt = new Date(date);
-      const diffTime = Math.abs(createdAt - today);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays <= 7;
-    },
-  },
+const fetchQuizzes = async (): Promise<void> => {
+  isLoading.value = true;
+  try {
+    const { data } = await axios.get<Quiz[]>("/quizIndexAPI", {
+      cancelToken: new axios.CancelToken((canceler: Canceler) => {
+        cancelRequest.value = canceler;
+      }),
+    });
+    quizzes.value = data;
+  } catch (error: any) {
+    if (axios.isCancel(error)) {
+      console.log("Request canceled", error.message);
+    } else {
+      error.value = "クイズの取得に失敗しました。再度お試しください。";
+      console.error(error);
+    }
+  } finally {
+    isLoading.value = false;
+  }
 };
+
+const isCreatedInWeek = (date: string): boolean => {
+  const today: Date = new Date();
+  const createdAt: Date = new Date(date);
+  const diffTime: number = Math.abs(createdAt.getTime() - today.getTime());
+  const diffDays: number = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays <= 7;
+};
+
+const deleteQuiz = async (id: string, index: number): Promise<void> => {
+  // 削除前の確認を表示
+  if (!confirm("id:" + id + " のQuizを削除します\nよろしいですか?")) {
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    await axios.delete(`/quizManagementAPI/${id}`, {
+      cancelToken: new axios.CancelToken((canceler: Canceler) => {
+        cancelRequest.value = canceler;
+      }),
+    });
+
+    // quizzes配列から削除
+    quizzes.value.splice(index, 1);
+    scrollToTop();
+    message.value = "削除しました";
+  } catch (error: any) {
+    if (axios.isCancel(error)) {
+      console.log("Request canceled", error.message);
+    } else {
+      error.value = "クイズの取得に失敗しました。再度お試しください。";
+      console.error(error);
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const scrollToTop = (): void => {
+  document.documentElement.scrollTop = 0;
+};
+
+onMounted(async () => {
+  await fetchQuizzes();
+});
+
+onBeforeUnmount(() => {
+  if (cancelRequest.value) {
+    cancelRequest.value();
+  }
+});
 </script>

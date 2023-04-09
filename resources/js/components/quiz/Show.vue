@@ -1,123 +1,133 @@
 <template>
   <h1>Quiz!</h1>
-  <div v-if="!this.quiz" class="col mt-3 mb-5">
-    <span>問題が見つかりませんでした</span>
-  </div>
-  <div v-slse class="col mt-3 mb-5">
-    <h2>問題</h2>
-    <div class="pl-2">
+  <div v-if="isMounted && quiz">
+    <div class="col mt-3 mb-5">
+      <h2>問題</h2>
+      <div class="pl-2">
+        <div class="mt-1">
+          <p v-html="formatText(quiz.question)"></p>
+        </div>
+      </div>
+    </div>
+    <div class="col mt-3 mb-5">
+      <h2>選択肢</h2>
       <div class="mt-1">
-        <p v-html="formatText(quiz.question)"></p>
+        <ol class="pl-4 answers" style="list-style-type: upper-alpha">
+          <li @click="checkClickedAnswer('A')">{{ quiz.answer_a }}</li>
+          <li @click="checkClickedAnswer('B')">{{ quiz.answer_b }}</li>
+          <li @click="checkClickedAnswer('C')">{{ quiz.answer_c }}</li>
+          <li @click="checkClickedAnswer('D')">{{ quiz.answer_d }}</li>
+        </ol>
       </div>
     </div>
+    <div v-if="isCorrect !== null">
+      <h3>
+        <div :id="isCorrect ? 'correct' : 'unCorrect'">
+          {{ isCorrect ? "正解です！" : "不正解です！" }}
+        </div>
+      </h3>
+      <div class="pl-2" id="answer">
+        <span>正解: {{ quiz.correct_answer }}</span>
+      </div>
+      <h4>
+        <div class="pl-2 mt-2" id="explanation">
+          解説:
+          <p v-html="formatText(quiz.explanation)"></p>
+        </div>
+      </h4>
+    </div>
+    <div class="mt-3 mb-5 text-right">
+      <router-link to="/quiz" class="btn btn-link">問題一覧に戻る!</router-link>
+    </div>
+    <div v-if="isLoading" class="spinner"></div>
+    <div v-if="error" class="error-container">{{ error }}</div>
   </div>
-  <div class="col mt-3 mb-5">
-    <h2>選択肢</h2>
-    <div class="mt-1">
-      <ol class="pl-4 answers" style="list-style-type: upper-alpha">
-        <li @click="checkClickedAnswer('A')">{{ quiz.answer_a }}</li>
-        <li @click="checkClickedAnswer('B')">{{ quiz.answer_b }}</li>
-        <li @click="checkClickedAnswer('C')">{{ quiz.answer_c }}</li>
-        <li @click="checkClickedAnswer('D')">{{ quiz.answer_d }}</li>
-      </ol>
+  <div v-else-if="isMounted && !quiz">
+    <div class="col mt-3 mb-5">
+      <span>問題が見つかりませんでした</span>
     </div>
   </div>
-  <div v-if="isCorrect !== null">
-    <h3>
-      <div :id="isCorrect ? 'correct' : 'unCorrect'">
-        {{ isCorrect ? "正解です！" : "不正解です！" }}
-      </div>
-    </h3>
-    <div class="pl-2" id="answer">
-      <span>正解: {{ quiz.correct_answer }}</span>
-    </div>
-    <h4>
-      <div class="pl-2 mt-2" id="explanation">
-        解説:
-        <p v-html="formatText(quiz.explanation)"></p>
-      </div>
-    </h4>
-  </div>
-  <div class="mt-3 mb-5 text-right">
-    <router-link to="/quiz" class="btn btn-link">問題一覧に戻る!</router-link>
-  </div>
-  <div v-if="isLoading" class="spinner"></div>
-  <div v-if="error" class="error-container">{{ error }}</div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      quiz: Object,
-      isCorrect: null,
-      isLoading: false,
-      error: null,
-    };
-  },
-  created() {
-    this.fetchQuiz(this.$route.params.id);
-  },
-  beforeUnmount() {
-    this.cancelRequest();
-  },
-  methods: {
-    async checkClickedAnswer(answer) {
-      // 選択した答え(A,B,C,D)
-      const selectedAnswer = answer;
-      const questionId = this.$route.params.id;
+<script setup>
+import axios from "axios";
+import { ref, onBeforeUnmount, onMounted } from "vue";
+import { useRoute } from "vue-router";
 
-      this.isLoading = true;
-      try {
-        const response = await axios.get(
-          `/quizCheckAnswerAPI/${questionId}/${selectedAnswer}`,
-          {
-            cancelToken: new axios.CancelToken((c) => {
-              this.cancelRequest = c;
-            }),
-          }
-        );
-        this.isCorrect = response.data;
-      } catch (error) {
-        if (axios.isCancel(error)) {
-          console.log("Request canceled", error.message);
-        } else {
-          this.error = "エラーが発生しました。再度お試しください。";
-          console.error(error);
-        }
-      } finally {
-        this.isLoading = false;
+const isMounted = ref(false);
+const quiz = ref(null);
+const isCorrect = ref(null);
+const isLoading = ref(false);
+const error = ref(null);
+const cancelRequest = ref(null);
+const questionId = useRoute().params.id;
+
+onMounted(async () => {
+  await fetchQuiz(questionId);
+  isMounted.value = true;
+});
+
+onBeforeUnmount(() => {
+  if (cancelRequest.value) {
+    cancelRequest.value();
+  }
+});
+
+const checkClickedAnswer = async (answer) => {
+  isLoading.value = true;
+
+  // 選択した答え(A,B,C,D)
+  const selectedAnswer = answer;
+
+  try {
+    const { data } = await axios.get(
+      `/quizCheckAnswerAPI/${questionId}/${selectedAnswer}`,
+      {
+        cancelToken: new axios.CancelToken((canceler) => {
+          cancelRequest.value = canceler;
+        }),
       }
-    },
-    fetchQuiz(id) {
-      this.isLoading = true;
-      axios
-        .get(`/quizShowAPI/${this.$route.params.id}`, {
-          cancelToken: new axios.CancelToken((c) => {
-            this.cancelRequest = c;
-          }),
-        })
-        .then((response) => {
-          this.quiz = response.data;
-        })
-        .catch((error) => {
-          if (axios.isCancel(error)) {
-            console.log("Request canceled", error.message);
-          } else {
-            this.error = "クイズの取得に失敗しました。再度お試しください。";
-            console.error(error);
-          }
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
-    },
-    formatText(text) {
-      return text.replace(/\s/g, "<br>");
-    },
-  },
+    );
+    isCorrect.value = data;
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log("Request canceled", error.message);
+    } else {
+      error.value = "エラーが発生しました。再度お試しください。";
+      console.error(error);
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const fetchQuiz = async (questionId) => {
+  isLoading.value = true;
+
+  try {
+    const { data } = await axios.get(`/quizShowAPI/${questionId}`, {
+      cancelToken: new axios.CancelToken((canceler) => {
+        cancelRequest.value = canceler;
+      }),
+    });
+    quiz.value = data;
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      console.log("Request canceled", error.message);
+    } else {
+      error.value = "クイズの取得に失敗しました。再度お試しください。";
+      console.error(error);
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const formatText = (text) => {
+  return text.replace(/\s/g, "<br>");
 };
 </script>
+
 <style>
 /*
  * 単位について
@@ -206,5 +216,13 @@ div.section {
 div#section-correct-answer {
   /** 表示しない */
   display: none;
+}
+
+#correct {
+  color: gold;
+}
+
+#unCorrect {
+  color: red;
 }
 </style>
