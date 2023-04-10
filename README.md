@@ -43,7 +43,7 @@ git clone https://github.com/chanryu32/quiz-application.git
 ```
 clone できたら、以下でディレクトリを移動してください。
 ```
-cd laravel-quiz-app
+cd quiz-application
 ```
 
 
