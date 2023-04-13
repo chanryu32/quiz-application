@@ -4,10 +4,17 @@
   </div>
   <div class="row mt-5 mb-3">
     <div class="col text-right">
-      <router-link to="/quiz" class="btn btn-primary" style="margin-right: 10px"
+      <router-link
+        to="/quiz"
+        id="btnQuiz"
+        class="btn btn-primary"
+        style="margin-right: 10px"
         >クイズをプレイ！</router-link
       >
-      <router-link to="/quiz-management/create" class="btn btn-primary"
+      <router-link
+        to="/quiz-management/create"
+        id="btnAdd"
+        class="btn btn-primary"
         >追加</router-link
       >
     </div>
@@ -40,11 +47,13 @@
               <router-link
                 :to="'/quiz-management/edit/' + quiz.id"
                 class="btn btn-outline-primary btn-sm"
+                id="btnEdit"
                 >編集</router-link
               >
               <button
                 @click="deleteQuiz(quiz.id, index)"
                 class="delete-quiz btn btn-outline-danger btn-sm"
+                id="btnDelete"
               >
                 削除
               </button>
