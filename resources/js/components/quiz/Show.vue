@@ -22,7 +22,7 @@
     </div>
     <div v-if="isCorrect !== null">
       <h3>
-        <div :id="isCorrect ? 'correct' : 'unCorrect'">
+        <div :id="isCorrect ? 'correct' : 'inCorrect'">
           {{ isCorrect ? "正解です！" : "不正解です！" }}
         </div>
       </h3>
@@ -222,7 +222,7 @@ div#section-correct-answer {
   color: gold;
 }
 
-#unCorrect {
+#inCorrect {
   color: red;
 }
 </style>
