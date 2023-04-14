@@ -38,6 +38,7 @@
               :placeholder="answer.placeholder"
               :aria-label="'回答' + answer.label"
               :aria-describedby="'answer-' + index"
+              :id="'answer-' + answer.label"
             />
           </div>
         </div>
@@ -71,8 +72,8 @@
         </div>
       </div>
       <div class="mt-3 mb-5">
-        <button type="submit" class="btn btn-primary">追加</button>
-        <router-link to="/quiz-management" class="btn btn-link"
+        <button type="submit" class="btn btn-primary" id="btnAdd">追加</button>
+        <router-link to="/quiz-management" class="btn btn-link" id="btnBack"
           >一覧に戻る</router-link
         >
       </div>
