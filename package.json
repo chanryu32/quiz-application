@@ -10,17 +10,6 @@
     "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --no-progress --config=node_modules/laravel-mix/setup/webpack.config.js"
   },
   "devDependencies": {
-    "@types/babel__generator": "^7.6.4",
-    "@types/babel__template": "^7.4.1",
-    "@types/babel__traverse": "^7.18.3",
-    "@types/body-parser": "^1.19.2",
-    "@types/eslint": "^8.37.0",
-    "@types/imagemin": "^8.0.1",
-    "@types/mime": "^3.0.1",
-    "@types/minimatch": "^5.1.2",
-    "@types/node": "^18.15.11",
-    "@types/qs": "^6.9.7",
-    "@types/range-parser": "^1.2.4",
     "axios": "^1.0.0",
     "cross-env": "^7.0.3",
     "cypress": "^12.9.0",
